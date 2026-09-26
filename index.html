@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>परीक्षा नतिजा पोर्टल - श्री बालकल्याण मा.वि.</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 15px; }
+        .container { max-width: 650px; background: #ffffff; margin: auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 6px solid #d32f2f; }
+        .header { text-align: center; border-bottom: 2px dashed #d32f2f; padding-bottom: 15px; margin-bottom: 20px; }
+        .header img { max-height: 100px; margin-bottom: 8px; }
+        .header h2 { margin: 5px 0; color: #d32f2f; font-size: 22px; font-weight: bold; }
+        .header p { margin: 2px 0; color: #555; font-size: 14px; }
+        
+        .search-box { background: #fff5f5; padding: 18px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffcdd2; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: 600; color: #333; font-size: 14px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #cccccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        
+        button { width: 100%; padding: 12px; background: #d32f2f; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #b71c1c; }
+        
+        .result-card { display: none; margin-top: 20px; border: 1px solid #dcdcdc; padding: 20px; border-radius: 8px; background: #fff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #dddddd; padding: 9px; text-align: center; font-size: 14px; }
+        th { background-color: #ffebee; color: #b71c1c; font-weight: bold; }
+        
+        .contact-info { margin-top: 20px; padding: 10px; background: #fff9e6; border: 1px solid #ffeeba; border-radius: 5px; text-align: center; font-size: 13px; color: #856404; font-weight: 600; }
+        .print-btn { background: #28a745; margin-top: 15px; }
+        .print-btn:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- विद्यालयको शीर्षक र लोगो -->
+    <div class="header">
+        <img src="logo.png" id="schoolLogo" alt="श्री बालकल्याण मा.वि. लोगो">
+        <h2>श्री बालकल्याण माध्यमिक विद्यालय</h2>
+        <p>चापाकोट-४, खानीखोला, स्याङ्जा | स्था. २०४४</p>
+        <p style="font-weight: bold; color: #333; margin-top: 5px;">परीक्षा नतिजा पोर्टल (Result Portal)</p>
+    </div>
+
+    <!-- नतिजा खोज्ने फर्म -->
+    <div class="search-box">
+        <div class="form-group">
+            <label for="examType">परीक्षाको प्रकार (Exam Type):</label>
+            <select id="examType">
+                <option value="प्रथम त्रैमासिक परीक्षा (First Terminal Examination)">प्रथम त्रैमासिक परीक्षा (First Term)</option>
+                <option value="दोस्रो त्रैमासिक परीक्षा (Second Terminal Examination)">दोस्रो त्रैमासिक परीक्षा (Second Term)</option>
+                <option value="तेस्रो त्रैमासिक परीक्षा (Third Terminal Examination)">तेस्रो त्रैमासिक परीक्षा (Third Term)</option>
+                <option value="वार्षिक परीक्षा (Annual Examination)">वार्षिक परीक्षा (Annual Exam)</option>
+                <option value="इकाई / टेस्ट परीक्षा (Unit Test / Class Test)">इकाई / टेस्ट परीक्षा (Unit / Test Exam)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="classSelect">कक्षा (Class):</label>
+            <select id="classSelect">
+                <option value="Class 1">Class 1</option>
+                <option value="Class 2">Class 2</option>
+                <option value="Class 3">Class 3</option>
+                <option value="Class 4">Class 4</option>
+                <option value="Class 5">Class 5</option>
+                <option value="Class 6">Class 6</option>
+                <option value="Class 7">Class 7</option>
+                <option value="Class 8">Class 8</option>
+                <option value="Class 9">Class 9</option>
+                <option value="Class 10">Class 10</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="symbolNo">सिम्बल नम्बर वा रोल नम्बर (Symbol / Roll No):</label>
+            <input type="text" id="symbolNo" placeholder="सिम्बल नम्बर हाल्नुहोस् (जस्तै: 101)">
+        </div>
+
+        <button onclick="searchResult()">नतिजा हेर्नुहोस् (Check Result)</button>
+    </div>
+
+    <!-- नतिजा देखिने ठाउँ -->
+    <div id="resultCard" class="result-card">
+        <h3 style="text-align:center; margin-top:0; color:#d32f2f;" id="resExamTitle">परीक्षाको प्राप्ताङ्क पत्र</h3>
+        <p style="margin: 5px 0;"><strong>विद्यार्थीको नाम:</strong> <span id="resStudentName"></span></p>
+        <p style="margin: 5px 0;"><strong>कक्षा:</strong> <span id="resClass"></span> | <strong>सिम्बल नं:</strong> <span id="resSymbol"></span></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>विषय (Subject)</th>
+                    <th>प्राप्त अङ्क / ग्रेड (Marks / Grade)</th>
+                </tr>
+            </thead>
+            <tbody id="marksTable">
+                <!-- गुगल शिटबाट अटोमेटिक आउँछ -->
+            </tbody>
+        </table>
+
+        <p style="text-align:right; font-weight:bold; font-size: 16px; margin-top: 15px;">
+            कुल नतिजा / GPA: <span id="resGPA" style="color: #d32f2f;"></span>
+        </p>
+        
+        <div class="contact-info">
+            📞 थप जानकारी वा सच्याउनुपर्ने भएमा विद्यालय प्रशासनमा सम्पर्क गर्नुहोस्: <strong>9766811888</strong>
+        </div>
+
+        <button class="print-btn" onclick="window.print()">प्रिन्ट गर्नुहोस् (Print Marksheet)</button>
+    </div>
+</div>
+
+<script>
+    // यहाँ आफ्नो Google Sheet को ID हाल्नुहोस्
+    const GOOGLE_SHEET_ID = "YOUR_GOOGLE_SHEET_ID_HERE";
+
+    function searchResult() {
+        const examName = document.getElementById('examType').value;
+        const selectedClass = document.getElementById('classSelect').value;
+        const symbolNo = document.getElementById('symbolNo').value.trim();
+
+        if(!symbolNo) {
+            alert("कृपया सिम्बल नम्बर वा रोल नम्बर टाइप गर्नुहोस्!");
+            return;
+        }
+
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(selectedClass)}`;
+
+        fetch(url)
+            .then(res => res.text())
+            .then(rep => {
+                const data = JSON.parse(rep.substr(47).slice(0, -2));
+                const cols = data.table.cols;
+                const rows = data.table.rows;
+                let found = false;
+
+                rows.forEach(row => {
+                    if(row.c[0] && row.c[0].v.toString() === symbolNo) {
+                        found = true;
+                        document.getElementById('resExamTitle').innerText = examName;
+                        document.getElementById('resStudentName').innerText = row.c[1] ? row.c[1].v : "N/A";
+                        document.getElementById('resClass').innerText = selectedClass;
+                        document.getElementById('resSymbol').innerText = symbolNo;
+
+                        let tableBody = "";
+                        for(let i = 3; i < cols.length; i++) {
+                            let subjName = cols[i] ? cols[i].label : `Subject ${i-2}`;
+                            let marks = row.c[i] ? row.c[i].v : "-";
+                            tableBody += `<tr><td>${subjName}</td><td>${marks}</td></tr>`;
+                        }
+                        
+                        document.getElementById('marksTable').innerHTML = tableBody;
+                        document.getElementById('resGPA').innerText = row.c[2] ? row.c[2].v : 'N/A';
+
+                        document.getElementById('resultCard').style.display = 'block';
+                    }
+                });
+
+                if(!found) {
+                    alert("माफ गर्नुहोला! यो सिम्बल नम्बरको नतिजा भेटिएन।");
+                    document.getElementById('resultCard').style.display = 'none';
+                }
+            })
+            .catch(err => {
+                alert("डाटा तान्न सकिएन। कृपया Google Sheet ID र Class Sheet Name सही छ कि छैन चेक गर्नुहोस्!");
+                console.error(err);
+            });
+    }
+</script>
+
+</body>
+</html>
