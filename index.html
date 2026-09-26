@@ -25,6 +25,7 @@
         th, td { border: 1px solid #dddddd; padding: 9px; text-align: center; font-size: 14px; }
         th { background-color: #ffebee; color: #b71c1c; font-weight: bold; }
         
+        .total-row { font-weight: bold; background-color: #f9f9f9; }
         .contact-info { margin-top: 20px; padding: 10px; background: #fff9e6; border: 1px solid #ffeeba; border-radius: 5px; text-align: center; font-size: 13px; color: #856404; font-weight: 600; }
         .print-btn { background: #28a745; margin-top: 15px; }
         .print-btn:hover { background: #1e7e34; }
@@ -46,22 +47,30 @@
         <div class="form-group">
             <label for="examType">परीक्षाको प्रकार (Exam Type):</label>
             <select id="examType">
+                <option value="इकाई / क्लास टेस्ट परीक्षा (Class Test Exam)">इकाई / क्लास टेस्ट परीक्षा (Class Test Exam)</option>
                 <option value="प्रथम त्रैमासिक परीक्षा (First Terminal Examination)">प्रथम त्रैमासिक परीक्षा (First Term)</option>
                 <option value="दोस्रो त्रैमासिक परीक्षा (Second Terminal Examination)">दोस्रो त्रैमासिक परीक्षा (Second Term)</option>
                 <option value="तेस्रो त्रैमासिक परीक्षा (Third Terminal Examination)">तेस्रो त्रैमासिक परीक्षा (Third Term)</option>
                 <option value="वार्षिक परीक्षा (Annual Examination)">वार्षिक परीक्षा (Annual Exam)</option>
-                <option value="इकाई / टेस्ट परीक्षा (Unit Test / Class Test)">इकाई / टेस्ट परीक्षा (Unit / Test Exam)</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="sheetTabName">Google Sheet को पाना/कक्षाको नाम (Sheet Tab Name):</label>
-            <input type="text" id="sheetTabName" placeholder="जस्तै: Sheet1 वा Class 10" value="Sheet1">
+            <label for="sheetTabName">कक्षा छान्नुहोस् (Select Class):</label>
+            <select id="sheetTabName">
+                <option value="4">कक्षा ४ (Class 4)</option>
+                <option value="5">कक्षा ५ (Class 5)</option>
+                <option value="6">कक्षा ६ (Class 6)</option>
+                <option value="7">कक्षा ७ (Class 7)</option>
+                <option value="8">कक्षा ८ (Class 8)</option>
+                <option value="9">कक्षा ९ (Class 9)</option>
+                <option value="10">कक्षा १० (Class 10)</option>
+            </select>
         </div>
 
         <div class="form-group">
             <label for="symbolNo">सिम्बल नम्बर (Symbol No):</label>
-            <input type="text" id="symbolNo" placeholder="सिम्बल नम्बर हाल्नुहोस् (जस्तै: 831001)">
+            <input type="text" id="symbolNo" placeholder="सिम्बल नम्बर हाल्नुहोस् (जस्तै: 1)">
         </div>
 
         <button onclick="searchResult()">नतिजा हेर्नुहोस् (Check Result)</button>
@@ -71,13 +80,13 @@
     <div id="resultCard" class="result-card">
         <h3 style="text-align:center; margin-top:0; color:#d32f2f;" id="resExamTitle">परीक्षाको प्राप्ताङ्क पत्र</h3>
         <p style="margin: 5px 0;"><strong>विद्यार्थीको नाम:</strong> <span id="resStudentName"></span></p>
-        <p style="margin: 5px 0;"><strong>जन्म मिति (DOB):</strong> <span id="resDOB"></span> | <strong>सिम्बल नं:</strong> <span id="resSymbol"></span></p>
+        <p style="margin: 5px 0;"><strong>कक्षा:</strong> <span id="resClass"></span> | <strong>जन्म मिति (DOB):</strong> <span id="resDOB"></span> | <strong>सिम्बल नं:</strong> <span id="resSymbol"></span></p>
         
         <table>
             <thead>
                 <tr>
                     <th>विषय (Subject)</th>
-                    <th>प्राप्त अङ्क / ग्रेड (Marks / Grade)</th>
+                    <th>प्राप्त अङ्क / ग्रेड (Obtained Marks)</th>
                 </tr>
             </thead>
             <tbody id="marksTable">
@@ -94,8 +103,8 @@
 </div>
 
 <script>
-    // तपाईंको Google Sheet को ID
-    const GOOGLE_SHEET_ID = "1UUdgOc3jc3FdeNKy5G555GGXnXxRVnMap5UAtGdcfhU";
+    // नयाँ Google Sheet को ID
+    const GOOGLE_SHEET_ID = "14PUtCMkU133zmyjsltL7-7MGD5jrVHXTmj_YRDTZjCY";
 
     function searchResult() {
         const examName = document.getElementById('examType').value;
@@ -103,7 +112,7 @@
         const symbolNo = document.getElementById('symbolNo').value.trim();
 
         if(!selectedClass) {
-            alert("कृपया Google Sheet को पाना/कक्षाको नाम लेख्नुहोस्!");
+            alert("कृपया कक्षा छान्नुहोस्!");
             return;
         }
 
@@ -123,20 +132,41 @@
                 let found = false;
 
                 rows.forEach(row => {
-                    // IEMIS File Structure: Symbol No -> Column index 5 (6th col), Student Name -> Column index 3 (4th col), DOB -> Column index 4 (5th col)
-                    if(row.c && row.c[5] && row.c[5].v.toString() === symbolNo) {
+                    // IEMIS File Structure: Symbol No -> Column Index 5, Student Name -> Column Index 3, DOB -> Column Index 4
+                    if(row.c && row.c[5] && row.c[5].v.toString().trim() === symbolNo) {
                         found = true;
                         document.getElementById('resExamTitle').innerText = examName;
                         document.getElementById('resStudentName').innerText = row.c[3] ? row.c[3].v : "N/A";
+                        document.getElementById('resClass').innerText = "Class " + selectedClass;
                         document.getElementById('resDOB').innerText = row.c[4] ? row.c[4].v : "N/A";
                         document.getElementById('resSymbol').innerText = symbolNo;
 
                         let tableBody = "";
+                        let totalObtained = 0;
+                        let validMarksCount = 0;
+
                         // Subject Columns start from index 6
                         for(let i = 6; i < cols.length; i++) {
                             let subjName = cols[i] && cols[i].label ? cols[i].label : `Subject ${i-5}`;
                             let marks = row.c[i] && row.c[i].v !== null ? row.c[i].v : "-";
-                            tableBody += `<tr><td>${subjName}</td><td>${marks}</td></tr>`;
+                            
+                            tableBody += `<tr>
+                                <td>${subjName}</td>
+                                <td><b>${marks}</b></td>
+                            </tr>`;
+
+                            if(typeof marks === 'number') {
+                                totalObtained += marks;
+                                validMarksCount++;
+                            }
+                        }
+
+                        // कुल प्राप्ताङ्क (Total Marks Row)
+                        if(validMarksCount > 0) {
+                            tableBody += `<tr class="total-row">
+                                <td>कुल जम्मा (Total Obtained)</td>
+                                <td style="color: #d32f2f;"><b>${totalObtained}</b></td>
+                            </tr>`;
                         }
                         
                         document.getElementById('marksTable').innerHTML = tableBody;
@@ -145,12 +175,12 @@
                 });
 
                 if(!found) {
-                    alert("माफ गर्नुहोला! यो सिम्बल नम्बरको नतिजा भेटिएन। कृपया सिम्बल नम्बर चेक गर्नुहोस्।");
+                    alert("माफ गर्नुहोला! यो सिम्बल नम्बरको नतिजा भेटिएन। कृपया सिम्बल नम्बर र कक्षा सही छ कि छैन चेक गर्नुहोस्।");
                     document.getElementById('resultCard').style.display = 'none';
                 }
             })
             .catch(err => {
-                alert("डाटा तान्न सकिएन! Google Sheet मा Share -> 'Anyone with the link' छ कि छैन चेक गर्नुहोस्।");
+                alert("डाटा तान्न सकिएन! Google Sheet मा यो कक्षाको पाना (Sheet Tab) बनेको छ कि छैन र Access 'Anyone with the link' छ कि छैन चेक गर्नुहोस्।");
                 console.error(err);
             });
     }
