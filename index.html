@@ -47,11 +47,11 @@
         <div class="form-group">
             <label for="examType">परीक्षाको प्रकार (Exam Type):</label>
             <select id="examType">
-                <option value="इकाई / क्लास टेस्ट परीक्षा (Class Test Exam)">इकाई / क्लास टेस्ट परीक्षा (Class Test Exam)</option>
-                <option value="प्रथम त्रैमासिक परीक्षा (First Terminal Examination)">प्रथम त्रैमासिक परीक्षा (First Term)</option>
-                <option value="दोस्रो त्रैमासिक परीक्षा (Second Terminal Examination)">दोस्रो त्रैमासिक परीक्षा (Second Term)</option>
-                <option value="तेस्रो त्रैमासिक परीक्षा (Third Terminal Examination)">तेस्रो त्रैमासिक परीक्षा (Third Term)</option>
-                <option value="वार्षिक परीक्षा (Annual Examination)">वार्षिक परीक्षा (Annual Exam)</option>
+                <option value="ClassTest">एकाइ / क्लास टेस्ट परीक्षा (Class Test Exam)</option>
+                <option value="FirstTerm">प्रथम त्रैमासिक परीक्षा (First Terminal Examination)</option>
+                <option value="SecondTerm">दोस्रो त्रैमासिक परीक्षा (Second Terminal Examination)</option>
+                <option value="ThirdTerm">तेस्रो त्रैमासिक परीक्षा (Third Terminal Examination)</option>
+                <option value="Annual">वार्षिक परीक्षा (Annual Examination)</option>
             </select>
         </div>
 
@@ -69,8 +69,8 @@
         </div>
 
         <div class="form-group">
-            <label for="symbolNo">सिम्बल नम्बर (Symbol No):</label>
-            <input type="text" id="symbolNo" placeholder="सिम्बल नम्बर हाल्नुहोस् (जस्तै: 1)">
+            <label for="symbolNo">सिम्बोल नं (Symbol No):</label>
+            <input type="text" id="symbolNo" placeholder="सिम्बोल नं हाल्नुहोस् (जस्तै: 1)">
         </div>
 
         <button onclick="searchResult()">नतिजा हेर्नुहोस् (Check Result)</button>
@@ -80,7 +80,7 @@
     <div id="resultCard" class="result-card">
         <h3 style="text-align:center; margin-top:0; color:#d32f2f;" id="resExamTitle">परीक्षाको प्राप्ताङ्क पत्र</h3>
         <p style="margin: 5px 0;"><strong>विद्यार्थीको नाम:</strong> <span id="resStudentName"></span></p>
-        <p style="margin: 5px 0;"><strong>कक्षा:</strong> <span id="resClass"></span> | <strong>जन्म मिति (DOB):</strong> <span id="resDOB"></span> | <strong>सिम्बल नं:</strong> <span id="resSymbol"></span></p>
+        <p style="margin: 5px 0;"><strong>कक्षा:</strong> <span id="resClass"></span> | <strong>जन्म मिति (DOB):</strong> <span id="resDOB"></span> | <strong>सिम्बोल नं:</strong> <span id="resSymbol"></span></p>
         
         <table>
             <thead>
@@ -95,7 +95,7 @@
         </table>
 
         <div class="contact-info">
-            📞 थप जानकारी वा सच्याउनुपर्ने भएमा विद्यालय प्रशासनमा सम्पर्क गर्नुहोस्: <strong>9766811888</strong>
+            📞 थप जानकारी वा सच्याउनुपर्ने भएमा विद्यालय प्रशासनमा सम्पर्क गर्नुहोस्: <strong>9817145451</strong>
         </div>
 
         <button class="print-btn" onclick="window.print()">प्रिन्ट गर्नुहोस् (Print Marksheet)</button>
@@ -103,11 +103,14 @@
 </div>
 
 <script>
-    // नयाँ Google Sheet को ID
+    // Google Sheet ID
     const GOOGLE_SHEET_ID = "14PUtCMkU133zmyjsltL7-7MGD5jrVHXTmj_YRDTZjCY";
 
     function searchResult() {
-        const examName = document.getElementById('examType').value;
+        const examSelect = document.getElementById('examType');
+        const examCode = examSelect.value;
+        const examText = examSelect.options[examSelect.selectedIndex].text;
+        
         const selectedClass = document.getElementById('sheetTabName').value.trim();
         const symbolNo = document.getElementById('symbolNo').value.trim();
 
@@ -117,25 +120,47 @@
         }
 
         if(!symbolNo) {
-            alert("कृपया सिम्बल नम्बर टाइप गर्नुहोस्!");
+            alert("कृपया सिम्बोल नं टाइप गर्नुहोस्!");
             return;
         }
 
-        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(selectedClass)}`;
+        // यदि एकाइ / क्लास टेस्ट बाहेक अरू परीक्षा छानियो भने नतिजा प्रकाशन नभएको म्यासेज दिने
+        if (examCode !== 'ClassTest') {
+            alert(`माफ गर्नुहोला! ${examText} को नतिजा अझै प्रकाशन गरिएको छैन।`);
+            document.getElementById('resultCard').style.display = 'none';
+            return;
+        }
+
+        // Google Sheet tab name (सिधै कक्षाको नम्बर जस्तै "4", "5", आदि)
+        const targetSheetTab = selectedClass;
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(targetSheetTab)}`;
 
         fetch(url)
             .then(res => res.text())
             .then(rep => {
+                if (rep.includes("error") || rep.includes("Invalid sheet name")) {
+                    alert(`माफ गर्नुहोला! ${examText} को नतिजा अझै प्रकाशन गरिएको छैन वा डाटा राखिएको छैन।`);
+                    document.getElementById('resultCard').style.display = 'none';
+                    return;
+                }
+
                 const data = JSON.parse(rep.substr(47).slice(0, -2));
+                
+                if (!data || !data.table || !data.table.rows) {
+                    alert(`माफ गर्नुहोला! ${examText} को नतिजा अझै प्रकाशन गरिएको छैन।`);
+                    document.getElementById('resultCard').style.display = 'none';
+                    return;
+                }
+
                 const cols = data.table.cols;
                 const rows = data.table.rows;
                 let found = false;
 
                 rows.forEach(row => {
-                    // IEMIS File Structure: Symbol No -> Column Index 5, Student Name -> Column Index 3, DOB -> Column Index 4
+                    // Symbol No -> Index 5, Student Name -> Index 3, DOB -> Index 4
                     if(row.c && row.c[5] && row.c[5].v.toString().trim() === symbolNo) {
                         found = true;
-                        document.getElementById('resExamTitle').innerText = examName;
+                        document.getElementById('resExamTitle').innerText = examText;
                         document.getElementById('resStudentName').innerText = row.c[3] ? row.c[3].v : "N/A";
                         document.getElementById('resClass').innerText = "Class " + selectedClass;
                         document.getElementById('resDOB').innerText = row.c[4] ? row.c[4].v : "N/A";
@@ -161,7 +186,7 @@
                             }
                         }
 
-                        // कुल प्राप्ताङ्क (Total Marks Row)
+                        // Total Marks Row
                         if(validMarksCount > 0) {
                             tableBody += `<tr class="total-row">
                                 <td>कुल जम्मा (Total Obtained)</td>
@@ -175,12 +200,13 @@
                 });
 
                 if(!found) {
-                    alert("माफ गर्नुहोला! यो सिम्बल नम्बरको नतिजा भेटिएन। कृपया सिम्बल नम्बर र कक्षा सही छ कि छैन चेक गर्नुहोस्।");
+                    alert("माफ गर्नुहोला! यो सिम्बोल नं को नतिजा भेटिएन। कृपया सिम्बोल नं र कक्षा सही छ कि छैन चेक गर्नुहोस्।");
                     document.getElementById('resultCard').style.display = 'none';
                 }
             })
             .catch(err => {
-                alert("डाटा तान्न सकिएन! Google Sheet मा यो कक्षाको पाना (Sheet Tab) बनेको छ कि छैन र Access 'Anyone with the link' छ कि छैन चेक गर्नुहोस्।");
+                alert(`माफ गर्नुहोला! ${examText} को नतिजा अझै प्रकाशन गरिएको छैन।`);
+                document.getElementById('resultCard').style.display = 'none';
                 console.error(err);
             });
     }
